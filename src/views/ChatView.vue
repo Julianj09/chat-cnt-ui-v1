@@ -94,7 +94,7 @@ const handleBack = () => {
 }
 
 /* Estilos responsivos */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .sidebar {
     transform: translateX(-100%);
     width: 280px;
@@ -107,6 +107,8 @@ const handleBack = () => {
   }
   
   .chat-area {
+    position: fixed;
+    left: 0px;
     margin-left: 0;
     width: 100%;
   }

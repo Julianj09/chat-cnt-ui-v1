@@ -1,55 +1,26 @@
-const API_KEY = '';
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+const FASTAPI_URL = 'http://localhost:8000'; // URL de tu backend FastAPI
 
-export const sendMessage = async (message, options = {}) => {
+export const sendMessage = async (message) => {
   try {
-    const response = await fetch(GEMINI_API_URL, {
+    const response = await fetch(`${FASTAPI_URL}/ask`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: message }]
-        }],
-        generationConfig: {
-          maxOutputTokens: options.maxLength || 200, // Limita la longitud de la respuesta
-          temperature: options.temperature || 0.3,    // Controla la creatividad (0.0 a 1.0)
-          topP: options.topP || 0.8,                 // Controla la diversidad de respuestas
-          topK: options.topK || 40,                  // Limita las opciones consideradas
-          stopSequences: options.stopSequences || [] // Secuencias donde debe parar
-        },
-        safetySettings: [ // Filtros de contenido opcionales
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_ONLY_HIGH"
-          }
-        ]
-      })
+      body: JSON.stringify({ query: message })
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Error detallado de Gemini:', errorData);
-      throw new Error(errorData.error?.message || `Error HTTP: ${response.status}`);
+      console.error('Error del backend:', errorData);
+      throw new Error(errorData.detail || `Error HTTP: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Respuesta completa de Gemini:', data);
-    
-    let responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 
-                      data.text || 
-                      "No se pudo obtener una respuesta válida";
+    return data;
 
-    // Aplicar límite de caracteres adicional si se especifica
-    if (options.charLimit) {
-      responseText = responseText.substring(0, options.charLimit);
-    }
-
-    return { response: responseText };
-    
   } catch (error) {
     console.error('Error en sendMessage:', error);
-    throw error;
+    throw new Error('No se pudo conectar al servidor. Por favor, intente más tarde.');
   }
 }
